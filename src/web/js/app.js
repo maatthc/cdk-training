@@ -1,5 +1,4 @@
-const API_ENDPOINT =
-  'https://2k3yluwgaf.execute-api.ap-southeast-2.amazonaws.com/prod/'
+const API_ENDPOINT = '/prod/'
 
 const DEBUG = false
 
