@@ -25,6 +25,11 @@ export class PhotographyStack extends cdk.Stack {
     new cloudfront.Distribution(this, 'photography-distribution', {
       defaultBehavior: { origin: new origins.S3Origin(appBucket) },
       defaultRootObject: 'index.html',
+      additionalBehaviors: {
+        '/photos/*': {
+          origin: new origins.S3Origin(photoBucket),
+        },
+      }
     });
 
     // API Gateway to for future interactions 
