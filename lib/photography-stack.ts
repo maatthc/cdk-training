@@ -74,6 +74,8 @@ export class PhotographyStack extends cdk.Stack {
         "TABLE_NAME": db.tableName
       }
     });
+
+    // Permission to write to DB
     db.grantReadWriteData(registerFunction)
 
     // create event source on 'photoBucket' trigger for ObjectCreated 
