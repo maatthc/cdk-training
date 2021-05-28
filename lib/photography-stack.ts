@@ -5,6 +5,7 @@ import * as s3 from '@aws-cdk/aws-s3';
 import * as apigw from '@aws-cdk/aws-apigateway';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as s3deploy from '@aws-cdk/aws-s3-deployment'
+import * as dynamo from '@aws-cdk/aws-dynamodb'
 
 export class PhotographyStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -58,5 +59,9 @@ export class PhotographyStack extends cdk.Stack {
       destinationBucket: appBucket,
     });
 
+    const db = new dynamo.Table(this, 'PhotoDb', {
+      partitionKey: { name: 'id', type: dynamo.AttributeType.STRING },
+      billingMode: dynamo.BillingMode.PAY_PER_REQUEST
+    })
   }
 }
