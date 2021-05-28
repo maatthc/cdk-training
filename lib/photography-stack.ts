@@ -52,6 +52,7 @@ export class PhotographyStack extends cdk.Stack {
 
     photoBucket.grantWrite(createFunction);
 
+    // Deploys files from local 'src/web' to the App bucket
     new s3deploy.BucketDeployment(this, 'DeployFiles', {
       sources: [s3deploy.Source.asset('./src/web')],
       destinationBucket: appBucket,
