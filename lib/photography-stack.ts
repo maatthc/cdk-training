@@ -65,12 +65,12 @@ export class PhotographyStack extends cdk.Stack {
       billingMode: dynamo.BillingMode.PAY_PER_REQUEST
     })
 
-    // create Lambda to upload photo to S3 
+    // create Lambda to register photo to Dynamo 
     const registerFunction = new lambda.Function(this, 'photography-register', {
-      runtime: lambda.Runtime.NODEJS_14_X, // execution environment 
-      code: lambda.Code.fromAsset('src/register'), // code loaded from referenced path 
+      runtime: lambda.Runtime.NODEJS_14_X,
+      code: lambda.Code.fromAsset('src/register'),
       handler: 'index.handler',
-      environment: { // we utilize environment variables so we don't need to modify the code 
+      environment: {
         "TABLE_NAME": db.tableName
       }
     });
@@ -84,5 +84,22 @@ export class PhotographyStack extends cdk.Stack {
         s3.EventType.OBJECT_CREATED
       ]
     }));
+
+    // create Lambda to list photo from Dynamo 
+    const listFunction = new lambda.Function(this, 'photography-list', {
+      runtime: lambda.Runtime.NODEJS_14_X,
+      code: lambda.Code.fromAsset('src/list'),
+      handler: 'index.handler',
+      environment: {
+        "TABLE_NAME": db.tableName
+      }
+    });
+    //  Add permission to read from DB
+    db.grantReadData(listFunction)
+
+    // GET endpoint /photo 
+    UploadResource.addMethod('GET',
+      new apigw.LambdaIntegration(listFunction),
+    );
   }
 }
