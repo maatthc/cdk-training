@@ -22,22 +22,26 @@ export class PhotographyStack extends cdk.Stack {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
     });
 
-    new cloudfront.Distribution(this, 'photography-distribution', {
+    // API Gateway to for lambda integration 
+    const photoApi = new apigw.RestApi(this, 'photography-photo-api', {
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigw.Cors.ALL_ORIGINS,
+        allowMethods: apigw.Cors.ALL_METHODS,
+      },
+    });
+    const cf = new cloudfront.Distribution(this, 'photography-distribution', {
       defaultBehavior: { origin: new origins.S3Origin(appBucket) },
       defaultRootObject: 'index.html',
       additionalBehaviors: {
         '/photos/*': {
           origin: new origins.S3Origin(photoBucket),
         },
+        '/prod/*': {
+          origin: new origins.HttpOrigin(`${photoApi.restApiId}.execute-api.${this.region}.${this.urlSuffix}`),
+          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+          allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        },
       }
-    });
-
-    // API Gateway to for future interactions 
-    const photoApi = new apigw.RestApi(this, 'photography-photo-api', {
-      defaultCorsPreflightOptions: {
-        allowOrigins: apigw.Cors.ALL_ORIGINS,
-        allowMethods: apigw.Cors.ALL_METHODS,
-      },
     });
 
     // create Lambda to upload photo to S3 
