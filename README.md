@@ -1,5 +1,7 @@
 # CDK TypeScript training!
 
+![Alt text](docs/diagram.jpg?raw=true 'Diagram')
+
 ## Steps
 
 ```
