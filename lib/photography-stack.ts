@@ -6,6 +6,7 @@ import * as apigw from '@aws-cdk/aws-apigateway';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as s3deploy from '@aws-cdk/aws-s3-deployment'
 import * as dynamo from '@aws-cdk/aws-dynamodb'
+import * as lambdaEventSources from '@aws-cdk/aws-lambda-event-sources'
 
 export class PhotographyStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -63,5 +64,23 @@ export class PhotographyStack extends cdk.Stack {
       partitionKey: { name: 'id', type: dynamo.AttributeType.STRING },
       billingMode: dynamo.BillingMode.PAY_PER_REQUEST
     })
+
+    // create Lambda to upload photo to S3 
+    const registerFunction = new lambda.Function(this, 'photography-register', {
+      runtime: lambda.Runtime.NODEJS_14_X, // execution environment 
+      code: lambda.Code.fromAsset('src/register'), // code loaded from referenced path 
+      handler: 'index.handler',
+      environment: { // we utilize environment variables so we don't need to modify the code 
+        "TABLE_NAME": db.tableName
+      }
+    });
+    db.grantReadWriteData(registerFunction)
+
+    // create event source on 'photoBucket' trigger for ObjectCreated 
+    registerFunction.addEventSource(new lambdaEventSources.S3EventSource(photoBucket, {
+      events: [
+        s3.EventType.OBJECT_CREATED
+      ]
+    }));
   }
 }
